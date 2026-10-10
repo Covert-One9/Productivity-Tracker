@@ -121,6 +121,7 @@
   </style>
 </head>
 
+</body>
 <body>
   <div class="container">
     <h1>My Productivity Tracker</h1>
@@ -133,7 +134,16 @@
         placeholder="What do you need to do?"
         required
       >
+
+       <select id="priorityInput">
+          <option value="Low">Low Priority</option>
+          <option value="Medium" selected>Medium Priority</option>
+          <option value="High">High Priority</option>
+        </select>
+
       <button type="submit">Add Task</button>
+
+     
     </form>
 
     <div class="stats">
