@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Productivity Tracker</title>
-
+  <link rel="stylesheet" href="look.css">
   <style>
     * {
       box-sizing: border-box;
@@ -120,12 +120,13 @@
     }
   </style>
 </head>
-
 </body>
+
 <body>
+
   <div class="container">
-    <h1>My Productivity Tracker</h1>
-    <p class="subtitle">Small steps. Consistent progress.</p>
+    <h1>Homework</h1>
+    <p class="subtitle">Homework to do</p>
 
     <form class="task-form" id="taskForm">
       <input
@@ -140,6 +141,60 @@
           <option value="Medium" selected>Medium Priority</option>
           <option value="High">High Priority</option>
         </select>
+
+        <label>
+          <p>Due Date</p>
+
+          <select name="month">
+            <option value="">Month</option>
+            <option value="01">January</option>
+            <option value="02">Febuary</option>
+            <option value="01">March</option>
+            <option value="01">April</option>
+            <option value="01">May</option>
+            <option value="01">June</option>
+            <option value="07">July</option>
+            <option value="01">August</option>
+            <option value="01">September</option>
+            <option value="01">October</option>
+            <option value="01">November</option>
+            <option value="01">December</option>
+          </select>
+            
+          <select id="day">
+            <option value="">Day</option>
+          </select>
+
+          <select id="year">
+            <option value="">Year</option>
+          </select>
+
+          <script>
+            const daySelect = document.getElementById('day');
+            const yearSelect = document.getElementById('year');
+
+            // 1. Populate Days (1 to 31)
+            for (let i = 1; i <= 31; i++) {
+              let option = document.createElement('option');
+              // Ensure two-digit format (e.g., '05' instead of '5')
+              let dayValue = i < 10 ? '0' + i : i; 
+              option.value = dayValue;
+              option.textContent = i;
+              daySelect.appendChild(option);
+            }
+
+            // 2. Populate Years (Goes back 100 years from the current year)
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear; i >= currentYear - 100; i--) {
+              let option = document.createElement('option');
+              option.value = i;
+              option.textContent = i;
+              yearSelect.appendChild(option);
+            }
+          </script>
+
+          
+        </label>
 
       <button type="submit">Add Task</button>
 
@@ -157,6 +212,29 @@
     <ul id="taskList"></ul>
   </div>
 
+  <div class="dashboard">
+
+    <div class="box">
+      <h2>Today's Progress</h2>
+      <p>3 of 5 tasks completed</p>
+    </div>
+
+    <div class="box">
+      <h2>Daily Goals</h2>
+      <p>Complete your daily goals here.</p>
+    </div>
+
+    <div class="box">
+      <h2>My Tasks</h2>
+      <p>Your task list goes here.</p>
+    </div>
+
+    <div class="box">
+      <h2>Focus Timer</h2>
+      <p>Time to concentrate!</p>
+    </div>
+
+</div>
   <script>
     const form = document.getElementById("taskForm");
     const input = document.getElementById("taskInput");
@@ -257,4 +335,8 @@
     renderTasks();
   </script>
 </body>
+
+
+
+
 </html>
