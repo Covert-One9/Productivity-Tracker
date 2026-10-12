@@ -6,9 +6,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Productivity Tracker</title>
   <link rel="stylesheet" href="look.css">
-  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="Brain.js" defer></script>
 </head>
 <body>
+  
+<section id="authSection">
+  <h2>Productivity Tracker Login</h2>
+
+  <form id="authForm">
+    <label for="authEmail">Email</label>
+    <input
+      id="authEmail"
+      type="email"
+      placeholder="Enter your email"
+      required
+    />
+
+    <label for="authPassword">Password</label>
+    <input
+      id="authPassword"
+      type="password"
+      placeholder="Create a password"
+      required
+      minlength="8"
+    />
+
+    <button type="button" id="signUpBtn">Create Account</button>
+    <button type="submit" id="signInBtn">Log In</button>
+  </form>
+
+  <p id="authMessage" role="status"></p>
+  <button type="button" id="signOutBtn" hidden>Log Out</button>
+</section>
+
 
   <div class="container">
     <h1>Homework</h1>

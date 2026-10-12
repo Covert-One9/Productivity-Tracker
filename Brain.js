@@ -1,4 +1,12 @@
 
+const SUPABASE_URL = "https://zantwocqgvlrcbmnlofm.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_7yn5D0LMFq7X0ovk4Dmsxw_Gh8EouR7";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
 document.addEventListener("DOMContentLoaded", () => {
   const $ = id => document.getElementById(id);
 
@@ -176,8 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
       taskList.appendChild(item);
     });
   }
-
-  form.addEventListener("submit", event => {
+form.addEventListener
+  ("submit", event => {
     event.preventDefault();
 
     const text = input.value.trim();
@@ -271,3 +279,81 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderTasks();
 });
+const authSection = document.getElementById("authSection");
+const authForm = document.getElementById("authForm");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const authMessage = document.getElementById("authMessage");
+const signUpBtn = document.getElementById("signUpBtn");
+const signOutBtn = document.getElementById("signOutBtn");
+
+signUpBtn.addEventListener("click", async () => {
+  authMessage.textContent = "Creating account...";
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: authEmail.value.trim(),
+    password: authPassword.value
+  });
+
+  if (error) {
+    authMessage.textContent = error.message;
+    return;
+  }
+
+  authMessage.textContent = data.session
+    ? "Account created! You are signed in."
+    : "Account created! Check your email to confirm your account.";
+});
+
+authForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  authMessage.textContent = "Logging in...";
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email: authEmail.value.trim(),
+    password: authPassword.value
+  });
+
+  if (error) {
+    authMessage.textContent = error.message;
+    return;
+  }
+
+  authMessage.textContent = "Login successful!";
+});
+
+signOutBtn.addEventListener("click", async () => {
+  const { error } = await supabaseClient.auth.signOut();
+
+  authMessage.textContent = error
+    ? error.message
+    : "You have logged out.";
+});
+
+async function updateAuthUI() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    authMessage.textContent = error.message;
+    return;
+  }
+
+  const signedIn = !!data.session;
+
+  authEmail.disabled = signedIn;
+  authPassword.disabled = signedIn;
+  signUpBtn.hidden = signedIn;
+  document.getElementById("signInBtn").hidden = signedIn;
+  signOutBtn.hidden = !signedIn;
+
+  authMessage.textContent = signedIn
+    ? "Signed in as " + data.session.user.email
+    : "Please create an account or log in.";
+}
+
+supabaseClient.auth.onAuthStateChange(() => {
+  updateAuthUI();
+});
+
+updateAuthUI();
+
