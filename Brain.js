@@ -2,6 +2,50 @@
 const SUPABASE_URL = "https://zantwocqgvlrcbmnlofm.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_7yn5D0LMFq7X0ovk4Dmsxw_Gh8EouR7";
 
+async function loadTasksFromSupabase() {
+  // Get the currently logged-in user
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  // Get this user's tasks from Supabase
+  const { data, error } = await supabaseClient
+    .from("tasks")
+    .select(
+      "id, title, notes, due_at, completed, priority, completed_at"
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Could not load tasks:", error.message);
+    return;
+  }
+
+  // Convert Supabase rows into the format your website uses
+  const loadedTasks = data.map((task) => ({
+    id: task.id,
+    text: task.title,
+    notes: task.notes || "",
+    done: task.completed,
+    priority: task.priority || "Medium",
+    dueDate: task.due_at
+      ? task.due_at.slice(0, 10)
+      : "",
+    completedAt: task.completed_at
+  }));
+
+  // Replace the current tasks with the online tasks
+  tasks.splice(0, tasks.length, ...loadedTasks);
+
+  // Refresh the task display
+  renderTasks();
+}
+
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
