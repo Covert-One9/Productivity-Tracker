@@ -429,7 +429,7 @@ if (signUpBtn) signUpBtn.addEventListener("click", async () => {  authMessage.te
     : "Account created! Check your email to confirm your account.";
 });
 
-authForm.addEventListener("submit", async (event) => {
+if (authForm) authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   authMessage.textContent = "Logging in...";
 
