@@ -412,8 +412,7 @@ const authMessage = document.getElementById("authMessage");
 const signUpBtn = document.getElementById("signUpBtn");
 const signOutBtn = document.getElementById("signOutBtn");
 
-signUpBtn.addEventListener("click", async () => {
-  authMessage.textContent = "Creating account...";
+if (signUpBtn) signUpBtn.addEventListener("click", async () => {  authMessage.textContent = "Creating account...";
 
   const { data, error } = await supabaseClient.auth.signUp({
     email: authEmail.value.trim(),
