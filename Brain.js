@@ -446,7 +446,7 @@ if (authForm) authForm.addEventListener("submit", async (event) => {
   authMessage.textContent = "Login successful!";
 });
 
-signOutBtn.addEventListener("click", async () => {
+if (signOutBtn) signOutBtn.addEventListener("click", async () => {
   const { error } = await supabaseClient.auth.signOut();
 
   authMessage.textContent = error
