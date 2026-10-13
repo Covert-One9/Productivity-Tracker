@@ -444,6 +444,7 @@ if (authForm) authForm.addEventListener("submit", async (event) => {
   }
 
   authMessage.textContent = "Login successful!";
+  window.location.href = "Index.html";
 });
 
 if (signOutBtn) signOutBtn.addEventListener("click", async () => {
