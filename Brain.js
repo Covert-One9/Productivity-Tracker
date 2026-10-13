@@ -454,37 +454,42 @@ if (signOutBtn) signOutBtn.addEventListener("click", async () => {
     : "You have logged out.";
 });
 
+
 async function updateAuthUI() {
   const { data, error } = await supabaseClient.auth.getSession();
 
   if (error) {
-    authMessage.textContent = error.message;
+    console.error("Could not check login session:", error.message);
     return;
   }
 
   const signedIn = !!data.session;
 
-  authEmail.disabled = signedIn;
-  authPassword.disabled = signedIn;
-  signUpBtn.hidden = signedIn;
-  document.getElementById("signInBtn").hidden = signedIn;
-  signOutBtn.hidden = !signedIn;
+  // Update login-page elements only if they exist.
+  if (authEmail) authEmail.disabled = signedIn;
+  if (authPassword) authPassword.disabled = signedIn;
+  if (signUpBtn) signUpBtn.hidden = signedIn;
 
-  authMessage.textContent = signedIn
-    ? "Signed in as " + data.session.user.email
-    : "Please create an account or log in.";
+  const signInBtn = document.getElementById("signInBtn");
+  if (signInBtn) signInBtn.hidden = signedIn;
+
+  if (signOutBtn) signOutBtn.hidden = !signedIn;
+
+  // Only update the message if it exists.
+  if (authMessage) {
+    authMessage.textContent = signedIn
+      ? "Signed in as " + data.session.user.email
+      : "Please create an account or log in.";
+  }
 }
 
-supabaseClient.auth.onAuthStateChange(() => {
-  updateAuthUI();
-});
 
 updateAuthUI();
 
 
 const LogOut = document.getElementById("LogOut");
 
-LogOut.addEventListener("click", async () => {
+if (LogOut) LogOut.addEventListener("click", async () => {  
   const { error } = await supabaseClient.auth.signOut();
 
   if (error) {
