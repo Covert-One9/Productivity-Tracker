@@ -158,21 +158,6 @@
       updateMode();
     });
 
-    // If already signed in, go straight to the tracker.
-    async function checkSession() {
-      const { data, error } =
-        await supabaseClient.auth.getSession();
-
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      if (data.session) {
-        window.location.replace("Index.html");
-      }
-    }
-
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
@@ -220,7 +205,6 @@
       }
     });
 
-    checkSession();
   </script>
 </body>
 </html>
