@@ -56,13 +56,55 @@ document.addEventListener("DOMContentLoaded", () => {
       Math.random().toString(36).slice(2);
   }
 
-  function saveTasks() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    } catch (error) {
-      console.error("Unable to save tasks:", error);
+async function saveTasks() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+
+    const { data: { user }, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      console.warn("Not signed in. Tasks saved locally only.");
+      return;
     }
+
+    for (const task of tasks) {
+      const taskData = {
+        title: task.text,
+        completed: task.done,
+        priority: task.priority || "Medium",
+        due_at: task.dueDate || null,
+        completed_at: task.done ? (task.completedAt || new Date().toISOString()) : null,
+        user_id: user.id
+      };
+
+      if (typeof task.id === "number") {
+        const { error } = await supabaseClient
+          .from("tasks")
+          .update(taskData)
+          .eq("id", task.id)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabaseClient
+          .from("tasks")
+          .insert(taskData)
+          .select("id")
+          .single();
+
+        if (error) throw error;
+
+        task.id = data.id;
+      }
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    console.log("Tasks synced to Supabase.");
+  } catch (error) {
+    console.error("Unable to sync tasks:", error);
   }
+}
 
   function isToday(dateString) {
     if (!dateString) return false;
@@ -184,8 +226,8 @@ document.addEventListener("DOMContentLoaded", () => {
       taskList.appendChild(item);
     });
   }
-form.addEventListener
-  ("submit", event => {
+
+  form.addEventListener("submit", event => {
     event.preventDefault();
 
     const text = input.value.trim();
