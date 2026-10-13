@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Productivity Tracker</title>
+  <link rel="stylesheet" href="look.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .login-card {
+      width: 90%;
+      max-width: 380px;
+      padding: 30px;
+      border-radius: 16px;
+      background: white;
+      color: #222;
+      box-sizing: border-box;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .login-card h1 {
+      margin-top: 0;
+    }
+
+    .login-card input {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .login-card button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #message {
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    .switch {
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .switch button {
+      background: transparent;
+      color: #2563eb;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="login-card">
+    <h1 id="heading">Welcome back</h1>
+    <p>Sign in to access your productivity tracker.</p>
+
+    <form id="authForm">
+      <input
+        id="email"
+        type="email"
+        placeholder="Email address"
+        autocomplete="email"
+        required
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button id="submitButton" type="submit">Log in</button>
+    </form>
+
+    <p id="message" role="status"></p>
+
+    <div class="switch">
+      <span id="switchText">Don't have an account?</span>
+      <button id="switchButton" type="button">
+        Create account
+      </button>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Use the SAME project URL and anon/publishable key
+    // as your existing productivity tracker.
+    const SUPABASE_URL = "https://zantwocqgvlrcbmnlofm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_7yn5D0LMFq7X0ovk4Dmsxw_Gh8EouR7";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    let creatingAccount = false;
+
+    const form = document.getElementById("authForm");
+    const message = document.getElementById("message");
+    const heading = document.getElementById("heading");
+    const submitButton = document.getElementById("submitButton");
+    const switchButton = document.getElementById("switchButton");
+    const password = document.getElementById("password");
+
+    function updateMode() {
+      heading.textContent = creatingAccount
+        ? "Create your account"
+        : "Welcome back";
+
+      submitButton.textContent = creatingAccount
+        ? "Sign up"
+        : "Log in";
+
+      switchButton.textContent = creatingAccount
+        ? "Log in"
+        : "Create account";
+
+      document.getElementById("switchText").textContent =
+        creatingAccount
+          ? "Already have an account?"
+          : "Don't have an account?";
+
+      password.autocomplete = creatingAccount
+        ? "new-password"
+        : "current-password";
+
+      message.textContent = "";
+    }
+
+    switchButton.addEventListener("click", () => {
+      creatingAccount = !creatingAccount;
+      updateMode();
+    });
+
+    // If already signed in, go straight to the tracker.
+    async function checkSession() {
+      const { data, error } =
+        await supabaseClient.auth.getSession();
+
+      if (error) {
+        message.textContent = error.message;
+        return;
+      }
+
+      if (data.session) {
+        window.location.replace("Index.html");
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      message.textContent = "Please wait...";
+      submitButton.disabled = true;
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const passwordValue = password.value;
+
+      try {
+        if (creatingAccount) {
+          const { data, error } =
+            await supabaseClient.auth.signUp({
+              email,
+              password: passwordValue
+            });
+
+          if (error) throw error;
+
+          if (data.session) {
+            window.location.replace("Index.html");
+            return;
+          }
+
+          message.textContent =
+            "Account created! Check your email to confirm it, then log in.";
+        } else {
+          const { error } =
+            await supabaseClient.auth.signInWithPassword({
+              email,
+              password: passwordValue
+            });
+
+          if (error) throw error;
+
+          window.location.replace("Index.html");
+          return;
+        }
+      } catch (error) {
+        message.textContent = error.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    checkSession();
+  </script>
+</body>
+</html>

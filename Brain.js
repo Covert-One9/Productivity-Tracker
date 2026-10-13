@@ -399,3 +399,15 @@ supabaseClient.auth.onAuthStateChange(() => {
 
 updateAuthUI();
 
+
+const LogOut = document.getElementById("LogOut");
+
+LogOut.addEventListener("click", async () => {
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    authMessage.textContent = error.message;
+  } else {
+    window.location.href = "login.html";
+  }
+});
