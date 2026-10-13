@@ -67,48 +67,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const STORAGE_KEY = "productivityTasks";
   let tasks = [];
+  
+async function loadTasksFromSupabase() {
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
 
-  // Load tasks without crashing if saved data is invalid.
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    const parsed = saved ? JSON.parse(saved) : [];
-
-    if (Array.isArray(parsed)) {
-      tasks = parsed
-        .filter(t =>
-          t &&
-          typeof t.text === "string" &&
-          typeof t.done === "boolean"
-        )
-        .map(t => ({
-          id: t.id || createId(),
-          text: t.text,
-          done: t.done,
-          priority: ["Low", "Medium", "High"].includes(t.priority)
-            ? t.priority
-            : "Medium",
-          dueDate: typeof t.dueDate === "string" ? t.dueDate : "",
-          completedAt: t.completedAt || null
-        }));
-    }
-  } catch (error) {
-    console.error("Unable to load tasks:", error);
+  if (userError || !user) {
+    window.location.replace("login.html");
+    return;
   }
+
+  const { data, error } = await supabaseClient
+    .from("tasks")
+    .select("id, title, completed, priority, due_at, completed_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Could not load tasks:", error.message);
+    return;
+  }
+
+  tasks = data.map(task => ({
+    id: task.id,
+    text: task.title,
+    done: task.completed,
+    priority: task.priority || "Medium",
+    dueDate: task.due_at ? task.due_at.slice(0, 10) : "",
+    completedAt: task.completed_at || null
+  }));
+
+loadTasksFromSupabase();
+}
+
+  
 
   function createId() {
     return Date.now().toString(36) +
       Math.random().toString(36).slice(2);
   }
 
+
 async function saveTasks() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-
     const { data: { user }, error: userError } =
       await supabaseClient.auth.getUser();
 
-    if (userError || !user) {
-      console.warn("Not signed in. Tasks saved locally only.");
+    if (userError) throw userError;
+
+    if (!user) {
+      console.warn("You must log in before saving tasks.");
+      window.location.replace("login.html");
       return;
     }
 
@@ -118,11 +127,14 @@ async function saveTasks() {
         completed: task.done,
         priority: task.priority || "Medium",
         due_at: task.dueDate || null,
-        completed_at: task.done ? (task.completedAt || new Date().toISOString()) : null,
+        completed_at: task.done
+          ? (task.completedAt || new Date().toISOString())
+          : null,
         user_id: user.id
       };
 
       if (typeof task.id === "number") {
+        // Update an existing task belonging to this user.
         const { error } = await supabaseClient
           .from("tasks")
           .update(taskData)
@@ -131,6 +143,7 @@ async function saveTasks() {
 
         if (error) throw error;
       } else {
+        // Insert a new task and store its database ID.
         const { data, error } = await supabaseClient
           .from("tasks")
           .insert(taskData)
@@ -143,10 +156,9 @@ async function saveTasks() {
       }
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     console.log("Tasks synced to Supabase.");
   } catch (error) {
-    console.error("Unable to sync tasks:", error);
+    console.error("Unable to sync tasks:", error.message);
   }
 }
 
@@ -260,10 +272,37 @@ async function saveTasks() {
       deleteButton.textContent = "Delete";
       deleteButton.setAttribute("aria-label", `Delete ${task.text}`);
 
-      deleteButton.addEventListener("click", () => {
-        tasks = tasks.filter(t => t.id !== task.id);
-        saveTasks();
-        renderTasks();
+      
+      deleteButton.addEventListener("click", async () => {
+        try {
+          const { data: { user }, error: userError } =
+            await supabaseClient.auth.getUser();
+
+          if (userError) throw userError;
+
+          if (!user) {
+            window.location.replace("login.html");
+            return;
+          }
+
+          // Delete the task from Supabase first.
+          if (typeof task.id === "number") {
+            const { error } = await supabaseClient
+              .from("tasks")
+              .delete()
+              .eq("id", task.id)
+              .eq("user_id", user.id);
+
+            if (error) throw error;
+          }
+
+          // Remove it from the visible task list.
+          tasks = tasks.filter(t => t.id !== task.id);
+          renderTasks();
+        } catch (error) {
+        console.error("Unable to delete task:", error.message);
+        alert("Could not delete task. Please try again.");
+        }
       });
 
       item.append(checkbox, details, priorityBadge, deleteButton);
