@@ -33,7 +33,7 @@ body {
 }
 
 /* Stack boxes on small screens */
-@media (max-width: 600px) {
+@media (max-width: 800px) {
   .dashboard {
     grid-template-columns: 1fr;
   }
@@ -150,3 +150,10 @@ body {
       text-align: center;
       padding: 20px;
     }
+.parent-container {
+  display: flex;
+  justify-content: space-between; /* Pushes child elements to the outer edges */
+}
+
+
+
