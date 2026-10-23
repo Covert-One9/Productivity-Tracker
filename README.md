@@ -19,3 +19,5 @@ click create an account
 put your email and password 
 check your email to authorize your account 
 then log in
+<img width="797" height="645" alt="Screenshot 2026-10-23 121846" src="https://github.com/user-attachments/assets/871b2e44-2f99-4fa7-ae75-1c3c3c06b289" />
+<img width="855" height="712" alt="Screenshot 2026-10-23 121839" src="https://github.com/user-attachments/assets/b1f107de-b381-48b0-a0b0-fa03a067ef6c" />
